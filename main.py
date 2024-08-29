@@ -1,12 +1,14 @@
 import pygame
-from board import Board
+from board import Board, BoardState, Coordinate
 from piece import Piece, PieceColor, PieceType
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode((400, 400))
+screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
 running = True
+board = Board(screen, board_state=BoardState(), width=screen.get_width(), height=screen.get_height())
+board.board_state.applyFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e5 0 0")
 
 while running:
     # poll for events
@@ -19,10 +21,8 @@ while running:
     screen.fill("lightgrey")
 
     # RENDER YOUR GAME HERE
-    board = Board(screen, width=screen.get_width(), height=screen.get_height())
     board.draw()
-    piece = Piece(screen, 0,0, PieceType.KNIGHT, PieceColor.WHITE)
-    piece.draw()
+
 
     # flip() the display to put your work on screen
     pygame.display.flip()
