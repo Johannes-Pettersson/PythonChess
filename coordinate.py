@@ -36,3 +36,6 @@ class Coordinate():
             self.literal = literal
             self.col = self.corresponding_col[literal[0]]
             self.row = self.corresponding_row[literal[1]]
+
+    def isInsideBoard(self):
+        return self.row >= 0 and self.row < 8 and self.col >= 0 and self.col < 8
