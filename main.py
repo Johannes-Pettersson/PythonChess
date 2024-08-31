@@ -2,13 +2,15 @@ import pygame
 from board import Board, BoardState, Coordinate
 from piece import Piece, PieceColor, PieceType
 
+
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
 running = True
 board = Board(screen, board_state=BoardState(), width=screen.get_width(), height=screen.get_height())
-board.board_state.applyFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e5 0 0")
+board.board_state.applyFEN("rnbqkbnr/pppppppp/8/8/8/3p4/PPPPPPPP/RNBQKBNR w KQkq e5 0 0")
+valid_moves = board.board_state.getValidMovesOfPiece(Coordinate(literal="e2"))
 
 while running:
     # poll for events
@@ -16,6 +18,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                board.clicked(pygame.mouse.get_pos())
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("lightgrey")

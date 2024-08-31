@@ -1,8 +1,7 @@
 import pygame
 from enum import Enum
 from coordinate import Coordinate
-
-IMAGES_PATH = "assets/"
+from globals import IMAGES_PATH
 
 class PieceType(Enum):
     KING = "k"

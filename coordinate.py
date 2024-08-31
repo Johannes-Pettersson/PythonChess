@@ -31,7 +31,11 @@ class Coordinate():
             assert col is not None and row is not None, "Literal and either row and col is None"
             self.col = col
             self.row = row
-            self.literal = key_from_value(self.corresponding_col, col) + key_from_value(self.corresponding_row, row)
+            if self.isInsideBoard():
+                self.literal = key_from_value(self.corresponding_col, col) + key_from_value(self.corresponding_row, row)
+            else:
+                print("Created Coordinate object without literal")
+                self.literal = "error"
         else:
             self.literal = literal
             self.col = self.corresponding_col[literal[0]]

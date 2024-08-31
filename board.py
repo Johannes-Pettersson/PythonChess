@@ -1,7 +1,8 @@
 import pygame
 from piece import Piece, PieceColor, PieceType
 from coordinate import Coordinate
-from typing import Union
+from typing import Tuple, Union
+from move_indication import MoveIndication
 
 class CastleRights():
     def __init__(self, white_kingside=True, white_queenside=True, black_kingside=True, black_queenside=True, fen=None) -> None:
@@ -133,60 +134,48 @@ class BoardState():
 
         if piece.piece_type == PieceType.PAWN:
             # Append all valid moves for pawn to valid_moves
-            if piece.piece_color.value == PieceColor.WHITE:
+            if piece.piece_color == PieceColor.WHITE:
                 # one step forward
-                move = coordinate_of_piece
-                move.row -= 1
+                move = Coordinate(row=coordinate_of_piece.row-1, col=coordinate_of_piece.col)
                 if move.isInsideBoard() and self.getPiece(move) is None:
                     valid_moves.append(move)
 
                 # two steps forward
                 if coordinate_of_piece.row == 6:
-                    move = coordinate_of_piece
-                    move.row -= 2
+                    move = Coordinate(coordinate_of_piece.row-2, coordinate_of_piece.col)
                     if len(valid_moves) == 1 and self.getPiece(move) is None:
                         valid_moves.append(move)
 
                 # left diagonal move
-                move = coordinate_of_piece
-                move.row -= 1
-                move.col -= 1
-                if (move.isInsideBoard() and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
+                move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col-1)
+                if (move.isInsideBoard() and self.getPiece(move) is not None and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
                     valid_moves.append(move)
 
                 # right diagonal move 
-                move = coordinate_of_piece
-                move.row -= 1
-                move.col += 1
-                if (move.isInsideBoard() and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
+                move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col+1)
+                if (move.isInsideBoard() and self.getPiece(move) is not None and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
                     valid_moves.append(move)  
             else:
                 #Black:
                 # one step forward
-                move = coordinate_of_piece
-                move.row += 1
+                move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col)
                 if move.isInsideBoard() and self.getPiece(move) is None:
                     valid_moves.append(move)
 
                 # two steps forward
                 if coordinate_of_piece.row == 1:
-                    move = coordinate_of_piece
-                    move.row += 2
+                    move = Coordinate(coordinate_of_piece.row+2, coordinate_of_piece.col)
                     if len(valid_moves) == 1 and self.getPiece(move) is None:
                         valid_moves.append(move)
 
                 # left diagonal move
-                move = coordinate_of_piece
-                move.row += 1
-                move.col -= 1
-                if (move.isInsideBoard() and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
+                move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col-1)
+                if (move.isInsideBoard() and self.getPiece(move) is not None and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
                     valid_moves.append(move)
 
                 # right diagonal move 
-                move = coordinate_of_piece
-                move.row += 1
-                move.col += 1
-                if (move.isInsideBoard() and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
+                move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+1)
+                if (move.isInsideBoard() and self.getPiece(move) is not None and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
                     valid_moves.append(move) 
 
         elif piece.piece_type == PieceType.KNIGHT:
@@ -206,21 +195,58 @@ class BoardState():
             pass
 
         # Perform all valid_moves on copy of Boardstate and check if king is checked in any of the cases in that case, remove the move
+        moves_to_remove = []
         for move in valid_moves:
             new_boardstate = BoardState()
             new_boardstate.applyFEN(self.createFEN())
             new_boardstate.movePiece(coordinate_of_piece, move)
-            if new_boardstate.kingIsChecked():
-                valid_moves.remove(move)
+            if new_boardstate.kingIsChecked(self.getPiece(coordinate_of_piece).piece_color):
+                moves_to_remove.append(move)
+
+        for move in moves_to_remove:
+            valid_moves.remove(move)
 
         return valid_moves
 
 
     def kingIsChecked(self, color_of_king: PieceColor) -> bool:
-        pass
+        king_coordinates = None
+        for row in range(8):
+            for col in range(8):
+                if self.pieces[row][col] is not None and self.pieces[row][col].piece_color.value == color_of_king.value and self.pieces[row][col].piece_type == PieceType.KING:
+                    king_coordinates = Coordinate(row, col)
+                    break
+            if king_coordinates is not None:
+                break    
+        assert king_coordinates is not None, "No king was found"
+        
+        # check if pawn is checking king
+        if color_of_king == PieceColor.WHITE:
+            pawn_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col-1)
+            pawn = self.getPiece(pawn_coordinate)
+            if pawn is not None and pawn.piece_type == PieceType.PAWN and pawn.piece_color.value != color_of_king.value:
+                return True
+            
+            pawn_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col+1)
+            pawn = self.getPiece(pawn_coordinate)
+            if pawn is not None and pawn.piece_type == PieceType.PAWN and pawn.piece_color.value != color_of_king.value:
+                return True
+        else:
+            pawn_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col-1)
+            pawn = self.getPiece(pawn_coordinate)
+            if pawn is not None and pawn.piece_type == PieceType.PAWN and pawn.piece_color.value != color_of_king.value:
+                return True
+            
+            pawn_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col+1)
+            pawn = self.getPiece(pawn_coordinate)
+            if pawn is not None and pawn.piece_type == PieceType.PAWN and pawn.piece_color.value != color_of_king.value:
+                return True
+        
+        return False
 
     def movePiece(self, from_coordinate: Coordinate, to_coordinate: Coordinate):
-        pass
+        self.setPiece(to_coordinate, self.getPiece(from_coordinate))
+        self.setPiece(from_coordinate, None)
 
 
 class Board():
@@ -233,6 +259,7 @@ class Board():
         self.light_color = light_color
         self.dark_color = dark_color
         self.board_state = board_state
+        self.currently_shown_valid_moves = []
 
     def draw(self):
         for i in range(8):
@@ -246,4 +273,11 @@ class Board():
                 if current_piece is not None:
                     current_piece.draw(screen=self.parent_screen, coordinate=Coordinate(row=i, col=j))
 
+        for move in self.currently_shown_valid_moves:
+            MoveIndication(self.board_state.getPiece(move) is not None).draw(self.parent_screen, move)          
 
+    def coordinateFromPixelcords(self, pixel_coords: Tuple[int, int]):
+        return Coordinate(row=int((pixel_coords[1]-self.y) / (self.height/8)), col=int((pixel_coords[0]-self.x) / (self.width/8)))
+
+    def clicked(self, pos):
+        self.currently_shown_valid_moves = self.board_state.getValidMovesOfPiece(self.coordinateFromPixelcords(pos))
