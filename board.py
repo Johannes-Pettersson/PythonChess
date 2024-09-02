@@ -433,7 +433,6 @@ class BoardState():
 
         return valid_moves
 
-
     def kingIsChecked(self, color_of_king: PieceColor) -> bool:
         king_coordinates = None
         for row in range(8):
@@ -608,6 +607,7 @@ class Board():
         self.light_color = light_color
         self.dark_color = dark_color
         self.board_state = board_state
+        self.coordinate_of_selected_piece = None
         self.currently_shown_valid_moves = []
 
     def draw(self):
@@ -625,8 +625,26 @@ class Board():
         for move in self.currently_shown_valid_moves:
             MoveIndication(self.board_state.getPiece(move) is not None).draw(self.parent_screen, move)          
 
-    def coordinateFromPixelcords(self, pixel_coords: Tuple[int, int]):
+    def coordinateFromPixelcords(self, pixel_coords: Tuple[int, int]) -> Coordinate:
         return Coordinate(row=int((pixel_coords[1]-self.y) / (self.height/8)), col=int((pixel_coords[0]-self.x) / (self.width/8)))
 
     def clicked(self, pos):
-        self.currently_shown_valid_moves = self.board_state.getValidMovesOfPiece(self.coordinateFromPixelcords(pos))
+        clicked_coordinate = self.coordinateFromPixelcords(pos)
+
+        if len(self.currently_shown_valid_moves) == 0:
+            self.coordinate_of_selected_piece = clicked_coordinate
+            self.currently_shown_valid_moves = self.board_state.getValidMovesOfPiece(clicked_coordinate)
+        else:
+            if clicked_coordinate.literal == self.coordinate_of_selected_piece.literal:
+                self.currently_shown_valid_moves = []
+                self.coordinate_of_selected_piece = None
+                return
+            if self.board_state.getPiece(clicked_coordinate) is not None and self.board_state.getPiece(clicked_coordinate).piece_color == self.board_state.getPiece(self.coordinate_of_selected_piece).piece_color:
+                self.coordinate_of_selected_piece = clicked_coordinate
+                self.currently_shown_valid_moves = self.board_state.getValidMovesOfPiece(clicked_coordinate)
+                return
+            for move in self.currently_shown_valid_moves:
+                if move.literal == clicked_coordinate.literal:
+                    self.board_state.movePiece(self.coordinate_of_selected_piece, move)
+                    self.currently_shown_valid_moves = []
+                    self.coordinate_of_selected_piece = None
