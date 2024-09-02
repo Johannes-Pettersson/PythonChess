@@ -9,8 +9,8 @@ screen = pygame.display.set_mode((500, 500))
 clock = pygame.time.Clock()
 running = True
 board = Board(screen, board_state=BoardState(), width=screen.get_width(), height=screen.get_height())
-board.board_state.applyFEN("rnbqkbnr/pppppppp/8/8/8/3p4/PPPPPPPP/RNBQKBNR w KQkq e5 0 0")
-valid_moves = board.board_state.getValidMovesOfPiece(Coordinate(literal="e2"))
+board.board_state.applyFEN("rnbqkbnr/pppppppp/8/1r5K/5P4/4N3/8/RNBQ1BNR w KQkq - 0 0")
+print(board.board_state.kingIsChecked(PieceColor.WHITE))
 
 while running:
     # poll for events

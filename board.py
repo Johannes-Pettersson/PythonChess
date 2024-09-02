@@ -49,6 +49,8 @@ class BoardState():
         self.fullmove_number = 0
 
     def getPiece(self, coordinate: Coordinate) -> Union[Piece, None]:
+        if not coordinate.isInsideBoard():
+            return None
         return self.pieces[coordinate.row][coordinate.col]
     
     def setPiece(self, coordinate: Coordinate, piece):
@@ -131,6 +133,8 @@ class BoardState():
         piece = self.getPiece(coordinate=coordinate_of_piece)
 
         valid_moves = []
+        if piece is None:
+            return valid_moves
 
         if piece.piece_type == PieceType.PAWN:
             # Append all valid moves for pawn to valid_moves
@@ -177,22 +181,243 @@ class BoardState():
                 move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+1)
                 if (move.isInsideBoard() and self.getPiece(move) is not None and self.getPiece(move).piece_color.value != piece.piece_color.value) or (self.en_passant_targets is not None and self.en_passant_targets.literal == move.literal):
                     valid_moves.append(move) 
-
         elif piece.piece_type == PieceType.KNIGHT:
             # Append all valid moves for knight to valid_moves
-            pass
+            move = Coordinate(coordinate_of_piece.row-2, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col+2)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+2)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row+2, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row+2, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col-2)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col-2)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
+
+            move = Coordinate(coordinate_of_piece.row-2, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and not (piece_on_target_square is not None and piece_on_target_square.piece_color.value == piece.piece_color.value):
+                valid_moves.append(move)
         elif piece.piece_type == PieceType.BISHOP:
             # Append all valid moves for bishop to valid_moves
-            pass
+            # N-E
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+
+            # S-E
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+
+            # S-W
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col-1)
+                piece_on_target_square = self.getPiece(move)
+
+            # N-W
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col-1)
+                piece_on_target_square = self.getPiece(move)
         elif piece.piece_type == PieceType.ROOK:
             # Append all valid moves for rook to valid_moves
-            pass
+            # N
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col)
+                piece_on_target_square = self.getPiece(move)
+            # S
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col)
+                piece_on_target_square = self.getPiece(move)
+            # E
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+            # W
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row, move.col-1)
+                piece_on_target_square = self.getPiece(move)
         elif piece.piece_type == PieceType.QUEEN:
             # Append all valid moves for queen to valid_moves
-            pass
+                        # N-E
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+
+            # S-E
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+
+            # S-W
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col-1)
+                piece_on_target_square = self.getPiece(move)
+
+            # N-W
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col-1)
+                piece_on_target_square = self.getPiece(move)
+            # N
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row-1, move.col)
+                piece_on_target_square = self.getPiece(move)
+            # S
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row+1, move.col)
+                piece_on_target_square = self.getPiece(move)
+            # E
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row, move.col+1)
+                piece_on_target_square = self.getPiece(move)
+            # W
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            while move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+                if piece_on_target_square is not None:
+                    break
+                move = Coordinate(move.row, move.col-1)
+                piece_on_target_square = self.getPiece(move)
         elif piece.piece_type == PieceType.KING:
             # Append all valid moves for king to valid_moves
-            pass
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row+1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col+1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+            move = Coordinate(coordinate_of_piece.row-1, coordinate_of_piece.col-1)
+            piece_on_target_square = self.getPiece(move)
+            if move.isInsideBoard() and (piece_on_target_square is None or piece_on_target_square.piece_color.value != piece.piece_color.value):
+                valid_moves.append(move)
+
 
         # Perform all valid_moves on copy of Boardstate and check if king is checked in any of the cases in that case, remove the move
         moves_to_remove = []
@@ -241,7 +466,131 @@ class BoardState():
             pawn = self.getPiece(pawn_coordinate)
             if pawn is not None and pawn.piece_type == PieceType.PAWN and pawn.piece_color.value != color_of_king.value:
                 return True
+            
+        # Check if Rook or queen is checking King 
+        # Above
+        enemy_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row-1, enemy_coordinate.col)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.ROOK or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True
+
+        # Below
+        enemy_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row+1, enemy_coordinate.col)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.ROOK or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True
+            
+        # To the right
+        enemy_coordinate = Coordinate(king_coordinates.row, king_coordinates.col+1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row, enemy_coordinate.col+1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.ROOK or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True 
+            
+        # To the left
+        enemy_coordinate = Coordinate(king_coordinates.row, king_coordinates.col-1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row, enemy_coordinate.col-1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.ROOK or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True 
+            
+        # Check if bishop or queen is checking King
+        # North east
+        enemy_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col+1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row-1, enemy_coordinate.col+1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.BISHOP or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True
+
+        # South east
+        enemy_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col+1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row+1, enemy_coordinate.col+1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.BISHOP or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True
+            
+        # South west
+        enemy_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col-1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row+1, enemy_coordinate.col-1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.BISHOP or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True 
+            
+        # North west
+        enemy_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col-1)
+        while enemy_coordinate.isInsideBoard() and self.getPiece(enemy_coordinate) is None:
+            enemy_coordinate = Coordinate(enemy_coordinate.row-1, enemy_coordinate.col-1)
+
+        if enemy_coordinate.isInsideBoard():
+            enemy = self.getPiece(enemy_coordinate)
+            if (enemy.piece_type == PieceType.BISHOP or enemy.piece_type == PieceType.QUEEN) and enemy.piece_color.value != color_of_king.value:
+                return True 
+
+
+        # Check if knight is checking King
+        knight_coordinate = Coordinate(king_coordinates.row-2, king_coordinates.col+1)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
         
+        knight_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col+2)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col+2)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row+2, king_coordinates.col+1)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row+2, king_coordinates.col-1)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row+1, king_coordinates.col-2)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row-1, king_coordinates.col-2)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+        
+        knight_coordinate = Coordinate(king_coordinates.row-2, king_coordinates.col-1)
+        knight = self.getPiece(knight_coordinate)
+        if knight is not None and knight.piece_type == PieceType.KNIGHT and knight.piece_color.value != color_of_king.value:
+            return True
+
         return False
 
     def movePiece(self, from_coordinate: Coordinate, to_coordinate: Coordinate):
